@@ -21,31 +21,34 @@ parse_script_args <- function(outputfile_arg=FALSE) {
                                  help="name of the output", metavar="character"));
   }
 
-  opt_parser = OptionParser(option_list=option_list);
-  opt = parse_args(opt_parser);
+  #opt_parser = OptionParser(option_list=option_list);
+  #opt = parse_args(opt_parser);
 
   args <- list()
 
+  args[['raw']] <- fromJSON(txt='/home/thomas/JKU/bachelor-thesis/results/clang-3.9.json')
+  args[['base_runtime']] <- 'clang-O2-v3.9'
+  
   # check benchfile is provided
-  if (!is.na(opt$benchfile)) {
-    if(!file.exists(opt$benchfile)) {
-      stop("file does not exist: ", opt$benchfile)
-    }
-    # read url and convert to data.frame
-    args[['raw']] <- fromJSON(txt=opt$benchfile)
-  } else {
-    stop("--benchfile parameter must be provided. See script usage (--help)")
-  }
+  #if (!is.na(opt$benchfile)) {
+  #  if(!file.exists(opt$benchfile)) {
+  #    stop("file does not exist: ", opt$benchfile)
+  #  }
+  #  # read url and convert to data.frame
+  #  args[['raw']] <- fromJSON(txt=opt$benchfile)
+  #} else {
+  #  stop("--benchfile parameter must be provided. See script usage (--help)")
+  #}
 
-  if (!is.na(opt$'base-runtime')) {
-    args[['base_runtime']] <- opt$'base-runtime'
-  } else {
-    stop("--base-runtime parameter must be provided. See script usage (--help)")
-  }
+  #if (!is.na(opt$'base-runtime')) {
+  #  args[['base_runtime']] <- opt$'base-runtime'
+  #} else {
+  #  stop("--base-runtime parameter must be provided. See script usage (--help)")
+  #}
 
-  if(outputfile_arg == TRUE) {
-    args[['outputfile']] <- opt$outputfile
-  }
+  #if(outputfile_arg == TRUE) {
+  #  args[['outputfile']] <- opt$outputfile
+  #}
 
   return(args)
 }
@@ -99,11 +102,15 @@ create_long <- function(df) {
   return(df_long)
 }
 
+gm_mean = function(x, na.rm=TRUE){
+  exp(sum(log(x[x > 0]), na.rm=na.rm) / length(x))
+}
+
 create_long_summary <- function(df_long) {
   # calculate mean and sum over all runs
   df_long_summary = df_long %>%
     group_by(benchmark, config, metric_name) %>%
-    summarise(runs=n(), value_mean=mean(value), value_sum=sum(value), value_sd=sd(value)) %>%
+    summarise(runs=n(), value_mean=gm_mean(value), value_sum=sum(value), value_sd=sd(value)) %>%
     ungroup()
 
   return(df_long_summary)

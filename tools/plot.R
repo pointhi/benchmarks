@@ -71,10 +71,10 @@ df_long_baseline <- util$create_long_baseline(df_long_summary, args$base_runtime
 
 for(plot_name in df_long_baseline$metric_name %>% unique()) {
   print(paste("plot comparison of:", plot_name, " "))
-  p <- ggplot(df_long_baseline %>% filter(metric_name == plot_name), aes(x=config, y=value_mean_factor)) +
-    geom_boxplot(notch = TRUE, varwidth=TRUE) +
+  p <- ggplot(df_long_baseline %>% filter(metric_name == plot_name) %>% filter(config != 'clang-O2-v3.9'), aes(x=config, y=value_mean_factor)) +
+    geom_boxplot(notch = TRUE, varwidth=TRUE) + coord_flip() +
     scale_x_discrete("runtime") +
-    scale_y_continuous("factor") +
+    scale_y_continuous("factor", breaks=c(0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19)) +
     ggtitle(plot_name)
   print(p)
 
@@ -89,7 +89,7 @@ for(plot_name in df_long_baseline$metric_name %>% unique()) {
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
 
   tryCatch({
-    print(p2)
+    #print(p2)
   }, error = function(e) {
     if(e[1] == 'Breaks and labels are different lengths') {  # This error happens in rare cases. Seems to be a bug in ggplot2
       warning(e)
@@ -107,7 +107,7 @@ for(plot_name in df_long_baseline$metric_name %>% unique()) {
     guides(fill=guide_legend(title="runtime")) +
     ggtitle(plot_name) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))
-  print(p_barchart)
+  #print(p_barchart)
 
   for(config_name in df_long$config %>% unique()) {
     df_long_config_metric = df_long %>% filter(config==config_name) %>% filter(metric_name==plot_name)
@@ -117,7 +117,7 @@ for(plot_name in df_long_baseline$metric_name %>% unique()) {
         scale_x_discrete('idx') +
         scale_y_continuous(trans = 'log10') +
         ggtitle(paste(plot_name, config_name, sep=": "))
-      print(p_details + theme(legend.position='none'))  # TODO: no legend for now, because it occludes the graph
+      #print(p_details + theme(legend.position='none'))  # TODO: no legend for now, because it occludes the graph
     }
   }
 }
@@ -125,9 +125,9 @@ for(plot_name in df_long_baseline$metric_name %>% unique()) {
 
 # interactive plot is also possible:
 
-#library(plotly)
-#p_boxplot <- p + geom_point(aes(text=benchmark), colour="grey", alpha=1/4)
-#ggplotly(p_boxplot, dynamicTicks=TRUE)
+library(plotly)
+p_boxplot <- p + geom_point(aes(text=benchmark), colour="grey", alpha=1/4)
+ggplotly(p_boxplot, dynamicTicks=TRUE)
 
 
 # matrix visualisation of all plots, to show patterns and outliers
